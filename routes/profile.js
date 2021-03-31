@@ -1,15 +1,12 @@
-const express = require('express');
-const multer = require('../middleware/multer');
+const router = require("express").Router()
 
-const router = express.Router();
-const { headerToken } = require('../middleware/auth');
-const profileControllers = require('../controllers/profile');
+const multer = require("../middleware/multer");
+const profileController = require("../controllers/profiles")
 
+router.post('/following/:id', profileController.followingPost);
 
-router.post('/following/:id', headerToken, profileControllers.followingPost);
+router.get('/follow', profileController.followGet);
 
-router.get('/follow', headerToken, profileControllers.getfollowers);
-
-router.post('/edit', [headerToken, multer], profileControllers.editing)
+router.post('/edit',multer,profileController.updating)
 
 module.exports = router;

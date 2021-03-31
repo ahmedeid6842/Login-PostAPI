@@ -1,14 +1,13 @@
-const express = require('express');
-const router = express.Router();
+const router = require("express").Router();
 
-const adminControllers = require('../controllers/admin');
+const adminController = require("../controllers/admin");
 
-router.post('/login', adminControllers.login);
+router.post('/login', adminController.postLogin);
 
-router.get('/get-user/:id', adminControllers.userData);
+router.get('/get-user/:id', adminController.getUser);
 
-router.get('/visit-user/:id', adminControllers.visitUser);
+router.get('/visit-user/:id', adminController.visitUser);
 
-router.get('/get-posts', adminControllers.getPosts);
+router.get('/get-posts', adminController.getPosts);
 
 module.exports = router;

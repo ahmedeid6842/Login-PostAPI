@@ -1,18 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const { headerToken } = require('../middleware/auth');
-const multer = require('../middleware/multer');
-const postControllers = require('../controllers/posts');
+const router = require("express").Router();
+const multer = require("../middleware/multer")
+const postsControllers = require("../controllers/posts")
 
-router.post('/new-post', [headerToken, multer], postControllers.newPost);
+router.post('/new-post', multer, postsControllers.addPost);
 
-router.post('/like/:id', headerToken, postControllers.newLike);
+router.post('/like/:id', postsControllers.addLike);
 
-router.post('/comment/:id', headerToken, postControllers.newComment);
+router.post('/comment/:id', postsControllers.addComment);
 
-router.get('/get-post/:id', postControllers.getPost);
+router.get('/get-post/:id', postsControllers.getPost);
 
-router.get('/get-posts', postControllers.getPosts);
-
+router.get('/get-posts');
 
 module.exports = router;

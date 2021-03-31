@@ -1,76 +1,46 @@
-const { User, validateUser, validateLogin } = require('../models/users');
-const { Profile, validateProfile } = require('../models/social/profile')
-const cloudinary = require('../middleware/cloudinary');
+const { ObjectId } = require("mongodb");
 
-const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-const mongoose = require('mongoose');
-const sendgridTransport = require("nodemailer-sendgrid-transport");
-const _ = require('lodash');
-const config = require('config');
+const _db = require("../middleware/db").getDB;
+const cloudinary = require("../middleware/cloudinary");
+const { validationResult } = require("express-validator");
 
+const bcrypt = require("bcrypt");
 
-
-const transport = nodemailer.createTransport(sendgridTransport({
-    auth: {
-        api_key: "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 "
+module.exports.registerPost = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(402).send({
+            validataion: errors.array()
+        })
     }
-}))
+    let { email, password, nameFirst, nameLast } = req.body, defaultProfileImage = "https://res.cloudinary.com/dj2yju5sd/image/upload/v1598091690/unknown-512_wvydzh.png";
+    // let user = await _db().db().collection("users").findOne({ email });
+    // if (user) return res.status(402).send("email already exsists");
 
-
-exports.addUser = async (req, res, next) => {
-    const { error } = validateUser(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-
-    let user = await User.findOne({ email: req.body.email });
-    if (user) return res.status(400).send('email already registerd')
-
-    user = new User({
-        email: req.body.email,
-        password: req.body.password,
-        name: req.body.name
-    })
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
+    password = await bcrypt.hash(password, salt);
 
-    user = await user.save();
-
-    const token = user.generateAuthToken();
-    transport.sendMail({
-        to: req.body.email,
-        from: 'essamomar75369@gmail.com',
-        subject: 'activate account',
-        html: `
-        <p> You requested a account activate </p>
-        <p> Click this <a href=http://localhost:3000/register/activate/${token}> to activate your account`
-    })
-    res.send('please check your email to activate account');
-
-
+    _db()
+        .db()
+        .collection("users")
+        .insertOne({
+            password,
+            email,
+            name: { first: nameFirst, last: nameLast },
+            followers: [],
+            following: [],
+            image: defaultProfileImage
+        })
+        .then(() => {
+            res.send("welcome");
+        })
+        .catch(err => {
+            console.log(err);
+        })
 
 }
 
-exports.activateUser = async (req, res) => {
-    let user = await User.findById(req.user._id);
-    if (!user) return res.status(400).send('invalid user');
+module.exports.activate = async (req, res) => {
+    const user = await _db().db().collection("users").updateOne({ _id: ObjectId(req.body._id) }, { $set: { activate: true } });
 
-    const result = await cloudinary.upload("http://res.cloudinary.com/dj2yju5sd/image/upload/v1594659091/vooufauusg855l3gvxo3.jpg");//req.files[0].path
-    user.Activate = true;
-    const profile = new Profile({
-        username: user.name,
-        image: result.url,
-        userID: user._id
-    })
-
-    user = await user.save();
-    await profile.save();
-    const token = user.generateAuthToken()
-    res.header('x-auth-token', token).send('activated successfully');
-}
-
-
-
-exports.getUsers = async (req, res) => {
-    const users = await User.find();
-    res.send(users);
 }

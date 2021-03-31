@@ -1,6 +1,0 @@
-{
-  "jwtPrivateKey": "jwtPrivateKey",
-  "cloudKey": "cloudKey",
-  "cloudSecret": "cloudSecret",
-  "sendgrid": "sendgrid"
-}

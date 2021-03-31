@@ -1,28 +1,34 @@
-const express = require('express');
-const mongoose = require('mongoose');
+const express = require("express");
+const bodyParser = require("body-parser");
+
+const db = require("./middleware/db");
+const register = require("./routes/users")
+const profile = require("./routes/profile")
+const post = require("./routes/posts")
+const auth = require("./routes/auth");
+const admin = require("./routes/admin");
+
+
 const app = express();
-const config = require('config');
-const register = require('./routes/users');
-const auth = require('./routes/auth');
-const profile = require('./routes/profile');
-const post = require('./routes/posts');
-const admin = require('./routes/admin');
-
 app.use(express.json())
-app.use('/images', express.static('images'));
 
-console.log(config.get("cloudKey"),config.get("cloudSecret"),config.get('sendgrid'))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
+app.use(express.static("images"));
+
 app.use('/register', register);
-app.use('/auth', auth);
 app.use('/profile', profile)
-app.use('/post', post)
+app.use('/posts', post)
+app.use('/auth', auth);
 app.use('/admin', admin)
 
 
-
-mongoose.connect('mongodb://localhost/index', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => {
-        app.listen(3000, console.log('contected .....'));
-    }).catch(err => {
+db.initDB((err, db) => {
+    if (err) {
         console.log(err);
-    })
+    } else {
+        app.listen(3000, console.log("connected"));
+    }
+
+})

@@ -1,16 +1,13 @@
-const express = require('express');
-const router = express.Router();
-// const config = require('config');
+const router = require("express").Router();
 
-const userControllers = require('../controllers/users');
-const { headerToken, routesToken } = require('../middleware/auth');
-const admin = require('../middleware/admin');
-const multer = require('../middleware/multer');
+const multer = require("../middleware/multer");
+const userControllers = require("../controllers/users");
+const { validateSignup } = require("../middleware/validate")
 
-router.post('/', userControllers.addUser);
-router.get('/activate/:token', [routesToken, multer], userControllers.activateUser);
+router.post('/', [multer, validateSignup], userControllers.registerPost);
 
-router.get('/me', [headerToken, admin], userControllers.getUsers)
+router.get('/activate', userControllers.activate);
 
+router.get('/me')
 
 module.exports = router;
